@@ -15,7 +15,7 @@ framework.
 """
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "socialbee.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "socialbee.settings_gondor")
 
 import socialbee.startup as startup
 startup.run()
