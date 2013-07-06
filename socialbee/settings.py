@@ -17,8 +17,9 @@ MANAGERS = ADMINS
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "dev.db",
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "socialbee",
+        "HOST": "127.0.0.1",
     }
 }
 
@@ -48,24 +49,10 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = os.path.join(PACKAGE_ROOT, "site_media", "media")
-
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash.
-# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
 MEDIA_URL = "/site_media/media/"
-
-# Absolute path to the directory static files should be collected to.
-# Don"t put anything in this directory yourself; store your static files
-# in apps" "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join(PACKAGE_ROOT, "site_media", "static")
-
-# URL prefix for static files.
-# Example: "http://media.lawrence.com/static/"
 STATIC_URL = "/site_media/static/"
+MEDIA_ROOT = os.path.join(os.environ.get("GONDOR_DATA_DIR", PACKAGE_ROOT), "site_media", "media")
+STATIC_ROOT = os.path.join(os.environ.get("GONDOR_DATA_DIR", PACKAGE_ROOT), "site_media", "static")
 
 # Additional locations of static files
 STATICFILES_DIRS = [
@@ -191,7 +178,7 @@ ACCOUNT_UNIQUE_EMAIL = EMAIL_CONFIRMATION_UNIQUE_EMAIL = False
 ACCOUNT_LOGIN_REDIRECT_URL = "home"
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 2
-LOGIN_URL = reverse_lazy("account_login_signup")
+LOGIN_URL = reverse_lazy("account_login")
 LOGIN_REDIRECT_URL = reverse_lazy("home")
 
 # Social Auth
@@ -256,18 +243,28 @@ TWITTER_EXTRA_DATA = [
 
 
 # Celery
+if "GONDOR_REDIS_URL" in os.environ:
+    urlparse.uses_netloc.append("redis")
+    url = urlparse.urlparse(os.environ["GONDOR_REDIS_URL"])
+    GONDOR_REDIS_HOST = url.hostname
+    GONDOR_REDIS_PORT = url.port
+    GONDOR_REDIS_PASSWORD = url.password
+else:
+    GONDOR_REDIS_HOST = "localhost"
+    GONDOR_REDIS_PORT = 6379
+    GONDOR_REDIS_PASSWORD = ""
 
 BROKER_TRANSPORT = "redis"
-BROKER_HOST = "localhost"
-BROKER_PORT = 6379
+BROKER_HOST = GONDOR_REDIS_HOST
+BROKER_PORT = GONDOR_REDIS_PORT
 BROKER_VHOST = "0"
-BROKER_PASSWORD = ""
+BROKER_PASSWORD = GONDOR_REDIS_PASSWORD
 BROKER_POOL_LIMIT = 10
 
 CELERY_RESULT_BACKEND = "redis"
-CELERY_REDIS_HOST = "localhost"
-CELERY_REDIS_PORT = 6379
-CELERY_REDIS_PASSWORD = ""
+CELERY_REDIS_HOST = GONDOR_REDIS_HOST
+CELERY_REDIS_PORT = GONDOR_REDIS_PORT
+CELERY_REDIS_PASSWORD = GONDOR_REDIS_PASSWORD
 CELERYD_HIJACK_ROOT_LOGGER = False
 CELERYD_LOG_LEVEL = "INFO"
 CELERYBEAT_SCHEDULER = "djcelery.schedulers.DatabaseScheduler"
