@@ -1,4 +1,5 @@
 import os
+import urlparse
 
 from django.core.urlresolvers import reverse_lazy
 

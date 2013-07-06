@@ -1,4 +1,5 @@
 import os
+import urlparse
 
 import dj_database_url
 
